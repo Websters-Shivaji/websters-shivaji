@@ -1,6 +1,6 @@
 // NOTE: This file was automatically updated to use fetchTechelonsData instead of importing from techelonsData directly.
 // Please review and update the component to use the async fetchTechelonsData function.
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import {
   BookOpen,
   Calendar,
@@ -22,6 +22,26 @@ import { fetchTechelonsData } from '@/lib/utils';
 // Main consolidated component to reduce importing overhead
 const EventContent = memo(({ event, formattedEventDateTime }) => {
   if (!event) return null;
+  
+  const [festDates, setFestDates] = useState({ day1: null, day2: null });
+
+  useEffect(() => {
+    const loadFestDates = async () => {
+      try {
+        const data = await fetchTechelonsData();
+        setFestDates({
+          day1: data?.festInfo?.dates?.day1 || null,
+          day2: data?.festInfo?.dates?.day2 || null
+        });
+      } catch (error) {
+        console.error("Error loading fest dates:", error);
+      }
+    };
+    
+    if (event.bothDayEvent) {
+      loadFestDates();
+    }
+  }, [event.bothDayEvent]);
 
   const { formattedDate, formattedTime, dayOfWeek } = formattedEventDateTime || {
     formattedDate: null,
@@ -78,8 +98,25 @@ const EventContent = memo(({ event, formattedEventDateTime }) => {
               <div className="font-medium text-primary mb-1">
                 {getDayDisplay()}
               </div>
-              <div className="text-foreground/80">{formattedDate} <span className="text-primary/70">({dayOfWeek})</span></div>
-              <div className="text-foreground/80">{formattedTime}</div>
+              {!event.bothDayEvent && (
+                <>
+                  <div className="text-foreground/80">{formattedDate} <span className="text-primary/70">({dayOfWeek})</span></div>
+                  <div className="text-foreground/80">{formattedTime}</div>
+                </>
+              )}
+              {event.bothDayEvent && (
+                <>
+                  <div className="text-foreground/80">
+                    <div className="mb-1">
+                      <span className="font-medium text-primary/80">Day 1:</span> {festDates.day1 || "TBA"}
+                    </div>
+                    <div>
+                      <span className="font-medium text-primary/80">Day 2:</span> {festDates.day2 || "TBA"}
+                    </div>
+                  </div>
+                  <div className="text-foreground/80 mt-1">{formattedTime}</div>
+                </>
+              )}
               {event.duration && (
                 <div className="flex items-center mt-1.5 text-foreground/70">
                   <Clock className="h-3 w-3 mr-1.5" />

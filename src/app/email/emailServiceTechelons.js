@@ -60,6 +60,26 @@ export async function sendTechelonsRegistrationEmail(registration, event, isTeam
   if (!whatsappGroupLink) {
     whatsappGroupLink = await getDefaultWhatsAppGroup();
   }
+  
+  // Get festival dates for both day events
+  let festDates = { day1: null, day2: null };
+  if (event.bothDayEvent) {
+    try {
+      // Connect to database to get festival dates
+      const { default: connectToDatabase } = await import('@/lib/mongodb');
+      const { default: TechelonsData } = await import('@/models/TechelonsData');
+      
+      await connectToDatabase();
+      const techelonsData = await TechelonsData.findOne({});
+      
+      if (techelonsData && techelonsData.festInfo && techelonsData.festInfo.dates) {
+        festDates.day1 = techelonsData.festInfo.dates.day1 || 'TBA';
+        festDates.day2 = techelonsData.festInfo.dates.day2 || 'TBA';
+      }
+    } catch (error) {
+      console.error('Error fetching festival dates:', error);
+    }
+  }
 
   // Format event details with fallbacks
   const eventDetails = {
@@ -71,6 +91,7 @@ export async function sendTechelonsRegistrationEmail(registration, event, isTeam
     category: event.category || '',
     bothDayEvent: event.bothDayEvent || false,
     festDay: event.festDay || '',
+    festDates,
     instructions: event.instructions || '',
     rules: Array.isArray(event.rules) ? event.rules : [],
     competitionStructure: Array.isArray(event.competitionStructure) ? event.competitionStructure : [],
@@ -94,6 +115,16 @@ export async function sendTechelonsRegistrationEmail(registration, event, isTeam
     `<p>Join our WhatsApp group for updates and communication:</p>
      <a href="${eventDetails.whatsappGroup}" class="button whatsapp" target="_blank">Join WhatsApp Group</a>` : '';
   const coordinatorsSection = generateCoordinatorsSection(eventDetails);
+  
+  // Generate date display based on whether it's a both day event
+  const dateDisplay = eventDetails.bothDayEvent ? 
+    `<li><strong>Dates:</strong>
+      <ul style="margin-top: 5px;">
+        <li><strong>Day 1:</strong> ${eventDetails.festDates.day1}</li>
+        <li><strong>Day 2:</strong> ${eventDetails.festDates.day2}</li>
+      </ul>
+    </li>` : 
+    `<li><strong>Date:</strong> ${eventDetails.date}</li>`;
 
   // Create email HTML content
   const htmlContent = `
@@ -190,7 +221,7 @@ export async function sendTechelonsRegistrationEmail(registration, event, isTeam
             <li><strong>Event:</strong> ${eventDetails.name}</li>
             ${eventDetails.tagline ? `<li><strong>Tagline:</strong> <em>${eventDetails.tagline}</em></li>` : ''}
             <li><strong>Festival Day:</strong> ${dayDisplay} ${eventDetails.bothDayEvent ? '<span class="badge">Both Days</span>' : ''}</li>
-            <li><strong>Date:</strong> ${eventDetails.date}</li>
+            ${dateDisplay}
             <li><strong>Time:</strong> ${eventDetails.time}</li>
             <li><strong>Venue:</strong> ${eventDetails.venue}</li>
             ${eventDetails.category ? `<li><strong>Category:</strong> ${eventDetails.category}</li>` : ''}
