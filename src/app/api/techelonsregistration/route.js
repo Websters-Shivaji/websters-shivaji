@@ -42,7 +42,7 @@ const registrationSchema = z.object({
   teamName: z.string().optional(),
   mainParticipant: teamMemberSchema,
   teamMembers: z.array(teamMemberSchema).optional(),
-  collegeIdUrl: z.string().min(1, "College ID is required"),
+  collegeIdUrl: z.string().optional(),
   query: z.string().optional(),
 });
 

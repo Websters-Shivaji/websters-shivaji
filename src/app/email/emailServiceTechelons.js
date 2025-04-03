@@ -283,7 +283,23 @@ function generateStructureSection(eventDetails) {
   return `
     <h2>Competition Structure</h2>
     <ol>
-      ${eventDetails.competitionStructure.map(item => `<li>${item}</li>`).join('')}
+      ${eventDetails.competitionStructure.map(item => {
+        if (typeof item === 'object') {
+          return `
+            <li>
+              <strong>${item.title}</strong>
+              ${item.description ? `<p>${item.description}</p>` : ''}
+              ${item.tasks && item.tasks.length > 0 ? `
+                <ul>
+                  ${item.tasks.map(task => `<li>${task}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </li>
+          `;
+        } else {
+          return `<li>${item}</li>`;
+        }
+      }).join('')}
     </ol>
   `;
 }
