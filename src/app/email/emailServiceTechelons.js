@@ -49,7 +49,7 @@ export async function sendTechelonsRegistrationEmail(registration, event, isTeam
     throw new Error('Registration and event data are required');
   }
 
-  const recipient = isTeamMember ? registration.teamMembers?.[0] : registration.mainParticipant;
+  const recipient = isTeamMember ? registration.mainParticipant : registration.mainParticipant;
 
   if (!recipient || !recipient.email) {
     throw new Error('Recipient email is required');

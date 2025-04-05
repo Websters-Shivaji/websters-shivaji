@@ -213,8 +213,12 @@ async function sendConfirmationEmails(registration, event) {
     // Send to team members if applicable
     if (registration.isTeamEvent && registration.teamMembers?.length > 0) {
       for (const member of registration.teamMembers) {
+        const teamMemberRegistration = {
+          ...registration.toObject(),
+          mainParticipant: member // Set the team member as mainParticipant for the email
+        };
         await sendTechelonsRegistrationEmail(
-          { ...registration.toObject(), mainParticipant: member },
+          teamMemberRegistration,
           event,
           true // isTeamMember flag
         );
