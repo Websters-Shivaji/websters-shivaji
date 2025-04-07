@@ -20,7 +20,7 @@ import { SectionHeading, InfoCard, RegistrationStatus } from "./UIComponents";
 import { fetchTechelonsData } from '@/lib/utils';
 
 // Main consolidated component to reduce importing overhead
-const EventContent = memo(({ event, formattedEventDateTime }) => {
+const EventContent = memo(({ event, formattedEventDateTime, registrationStatus }) => {
   if (!event) return null;
   
   const [festDates, setFestDates] = useState({ day1: null, day2: null });
@@ -154,7 +154,7 @@ const EventContent = memo(({ event, formattedEventDateTime }) => {
             <div>
               <div className="font-medium mb-1">Registration</div>
               <div className="flex items-center">
-                <RegistrationStatus status={event.registrationStatus || 'closed'} />
+                <RegistrationStatus status={registrationStatus} />
               </div>
             </div>
           </div>
