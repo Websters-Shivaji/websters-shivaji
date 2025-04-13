@@ -106,7 +106,50 @@ const useEventFiltering = (scheduleData) => {
 
                 return true
             })
-            .sort((a, b) => new Date(`2023-10-27T${a.startTime}`) - new Date(`2023-10-27T${b.startTime}`))
+            .sort((a, b) => {
+                // Sort by time
+                // If time is missing for an event, place it at the end
+                if (!a.time && !b.time) return 0;
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                
+                // Convert time strings (like "10:00 AM") to comparable values
+                const getTimeValue = (timeStr) => {
+                    if (!timeStr) return -1;
+                    // Handle formats like "10:00 AM", "10:00", "10AM", etc.
+                    let hours = 0;
+                    let minutes = 0;
+                    let isPM = false;
+                    
+                    // Check if it contains AM/PM
+                    if (timeStr.toUpperCase().includes('PM') && !timeStr.toUpperCase().includes('12:')) {
+                        isPM = true;
+                    }
+                    
+                    // Extract hours and minutes
+                    const timeMatch = timeStr.match(/(\d{1,2})(?::(\d{1,2}))?/);
+                    if (timeMatch) {
+                        hours = parseInt(timeMatch[1], 10);
+                        minutes = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
+                        
+                        // Convert to 24-hour format
+                        if (isPM && hours < 12) {
+                            hours += 12;
+                        }
+                        // Handle 12 AM (midnight) case
+                        if (!isPM && hours === 12) {
+                            hours = 0;
+                        }
+                    }
+                    
+                    return hours * 60 + minutes;
+                };
+                
+                const timeValueA = getTimeValue(a.time || a.startTime);
+                const timeValueB = getTimeValue(b.time || b.startTime);
+                
+                return timeValueA - timeValueB;
+            });
     }, [activeDay, activeFilter, searchTerm, featuredOnly, bothDayOnly, scheduleData])
 
     const resetFilters = useCallback(() => {

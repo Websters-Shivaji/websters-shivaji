@@ -37,6 +37,7 @@
     "mongoose": "^8.13.1",
     "next": "15.2.4",
     "nodemailer": "^6.10.0",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
